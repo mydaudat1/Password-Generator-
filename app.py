@@ -33,8 +33,9 @@ template = '''
             border: none;
             color: white;
             padding: 12px 28px;
+            text-align: center;
             font-size: 16px;
-            margin: 10px 5px;
+            margin: 10px;
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -53,18 +54,19 @@ template = '''
             margin-left: auto;
             margin-right: auto;
         }
+        #copyBtn {
+            display: none;
+            background-color: #2196F3;
+        }
+        #copyBtn:hover {
+            background-color: #0b7dda;
+        }
         input[type="number"] {
             padding: 10px;
             border-radius: 12px;
             border: 1px solid #ccc;
             font-size: 16px;
             width: 80px;
-        }
-        #copyMessage {
-            color: green;
-            font-size: 14px;
-            margin-top: 10px;
-            display: none;
         }
     </style>
 </head>
@@ -74,9 +76,8 @@ template = '''
     <input type="number" id="length" min="4" max="64" value="12">
     <br>
     <button class="btn" onclick="generatePassword()">Generate</button>
-    <button class="btn" onclick="copyPassword()">Copy Password</button>
     <div id="password"></div>
-    <div id="copyMessage">Password copied!</div>
+    <button id="copyBtn" class="btn" onclick="copyPassword()">Copy password</button>
 
     <script>
         function generatePassword() {
@@ -86,9 +87,11 @@ template = '''
                 .then(data => {
                     const text = data.password;
                     const passwordDiv = document.getElementById('password');
+                    const copyBtn = document.getElementById('copyBtn');
+
                     passwordDiv.style.opacity = 0;
                     passwordDiv.innerText = '';
-                    document.getElementById('copyMessage').style.display = 'none';
+                    copyBtn.style.display = 'none';
 
                     setTimeout(() => {
                         let index = 0;
@@ -97,6 +100,7 @@ template = '''
                             index++;
                             if (index >= text.length) {
                                 clearInterval(interval);
+                                copyBtn.style.display = 'inline-block';
                             }
                         }, 5000 / text.length);
                         passwordDiv.style.opacity = 1;
@@ -106,11 +110,10 @@ template = '''
 
         function copyPassword() {
             const passwordText = document.getElementById('password').innerText;
-            if (!passwordText) return;
             navigator.clipboard.writeText(passwordText).then(() => {
-                const msg = document.getElementById('copyMessage');
-                msg.style.display = 'block';
-                setTimeout(() => msg.style.display = 'none', 2000);
+                const btn = document.getElementById('copyBtn');
+                btn.innerText = "Copied!";
+                setTimeout(() => btn.innerText = "Copy password", 1500);
             });
         }
     </script>
