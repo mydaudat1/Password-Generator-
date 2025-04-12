@@ -11,7 +11,6 @@ template = '''
     <meta charset="UTF-8">
     <title>Password Generator</title>
     <style>
-        /* Import custom font từ file font.ttf trong thư mục static */
         @font-face {
             font-family: 'CustomFont';
             src: url("/static/font.ttf") format("truetype");
@@ -20,28 +19,22 @@ template = '''
         }
         body {
             font-family: 'CustomFont', Arial, sans-serif;
-            background: #FFDFC4; /* Màu da nhạt */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background: #FFDFC4;
+            text-align: center;
+            padding: 100px 20px;
             margin: 0;
         }
-        .container {
-            text-align: center;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            background: white;
+        h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
         }
         .btn {
             background-color: #4CAF50;
             border: none;
             color: white;
             padding: 12px 28px;
-            text-align: center;
             font-size: 16px;
-            margin: 20px 0;
+            margin: 10px 5px;
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -55,6 +48,10 @@ template = '''
             min-height: 30px;
             opacity: 0;
             transition: opacity 1s ease-in-out;
+            word-wrap: break-word;
+            max-width: 90%;
+            margin-left: auto;
+            margin-right: auto;
         }
         input[type="number"] {
             padding: 10px;
@@ -63,17 +60,23 @@ template = '''
             font-size: 16px;
             width: 80px;
         }
+        #copyMessage {
+            color: green;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Random Password Generator</h2>
-        <label for="length">Length:</label>
-        <input type="number" id="length" min="4" max="64" value="12">
-        <br>
-        <button class="btn" onclick="generatePassword()">Generate</button>
-        <div id="password"></div>
-    </div>
+    <h2>Random Password Generator</h2>
+    <label for="length">Length:</label>
+    <input type="number" id="length" min="4" max="64" value="12">
+    <br>
+    <button class="btn" onclick="generatePassword()">Generate</button>
+    <button class="btn" onclick="copyPassword()">Copy Password</button>
+    <div id="password"></div>
+    <div id="copyMessage">Password copied!</div>
 
     <script>
         function generatePassword() {
@@ -85,8 +88,8 @@ template = '''
                     const passwordDiv = document.getElementById('password');
                     passwordDiv.style.opacity = 0;
                     passwordDiv.innerText = '';
+                    document.getElementById('copyMessage').style.display = 'none';
 
-                    // Sau 500ms bắt đầu hiệu ứng gõ từng ký tự
                     setTimeout(() => {
                         let index = 0;
                         const interval = setInterval(() => {
@@ -95,10 +98,20 @@ template = '''
                             if (index >= text.length) {
                                 clearInterval(interval);
                             }
-                        }, 5000 / text.length);  // hiệu ứng typing trải đều trong 5 giây
+                        }, 5000 / text.length);
                         passwordDiv.style.opacity = 1;
                     }, 500);
                 });
+        }
+
+        function copyPassword() {
+            const passwordText = document.getElementById('password').innerText;
+            if (!passwordText) return;
+            navigator.clipboard.writeText(passwordText).then(() => {
+                const msg = document.getElementById('copyMessage');
+                msg.style.display = 'block';
+                setTimeout(() => msg.style.display = 'none', 2000);
+            });
         }
     </script>
 </body>
