@@ -73,7 +73,7 @@ template = '''
 <body>
     <h2>Random Password Generator</h2>
     <label for="length">Length:</label>
-    <input type="number" id="length" min="4" max="64" value="12">
+    <input type="number" id="length" min="5" max="64" value="12">
     <br>
     <button class="btn" onclick="generatePassword()">Generate</button>
     <div id="password"></div>
@@ -127,7 +127,7 @@ def home():
 
 @app.route('/generate')
 def generate():
-    length = request.args.get('length', default=12, type=int)
+    length = request.args.get('length', default=5, type=int)
     chars = string.ascii_letters + string.digits + string.punctuation
     password = ''.join(random.choices(chars, k=length))
     return jsonify({'password': password})
