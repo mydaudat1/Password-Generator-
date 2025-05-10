@@ -1,10 +1,13 @@
-from flask import Flask, render_template_string, request, jsonify import random import string import re
+from flask import Flask, render_template_string, request, jsonify
+import random
+import string
+import re
 
-app = Flask(name)
+app = Flask(__name__)
 
 template = '''
-
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>{{ 'Password Generator' if lang == 'en' else 'Trình tạo mật khẩu' }}</title>
@@ -73,59 +76,80 @@ template = '''
     <script>
         const updateLengthLabel = () => {
             document.getElementById('lengthLabel').innerText = document.getElementById('length').value;
-        };function generatePassword() {
-        const length = document.getElementById('length').value;
-        const letters = document.getElementById('useLetters').checked;
-        const digits = document.getElementById('useDigits').checked;
-        const symbols = document.getElementById('useSymbols').checked;
-        const emoji = document.getElementById('useEmoji').checked;
+        };
 
-        fetch(`/generate?length=${length}&letters=${letters}&digits=${digits}&symbols=${symbols}&emoji=${emoji}`)
-            .then(r => r.json())
-            .then(data => {
-                const pw = data.password;
-                document.getElementById('password').innerText = pw;
-                document.getElementById('strength').innerText = `{{ 'Strength' if lang == 'en' else 'Độ mạnh' }}: ` + data.strength;
-                document.getElementById('copyBtn').style.display = 'inline-block';
-            });
-    }
+        function generatePassword() {
+            const length = document.getElementById('length').value;
+            const letters = document.getElementById('useLetters').checked;
+            const digits = document.getElementById('useDigits').checked;
+            const symbols = document.getElementById('useSymbols').checked;
+            const emoji = document.getElementById('useEmoji').checked;
 
-    function copyPassword() {
-        navigator.clipboard.writeText(document.getElementById('password').innerText)
-            .then(() => {
-                const btn = document.getElementById('copyBtn');
-                btn.innerText = "{{ 'Copied!' if lang == 'en' else 'Đã sao chép!' }}";
-                setTimeout(() => btn.innerText = "{{ 'Copy' if lang == 'en' else 'Sao chép' }}", 1500);
-            });
-    }
-</script>
+            fetch(`/generate?length=${length}&letters=${letters}&digits=${digits}&symbols=${symbols}&emoji=${emoji}`)
+                .then(r => r.json())
+                .then(data => {
+                    const pw = data.password;
+                    document.getElementById('password').innerText = pw;
+                    document.getElementById('strength').innerText = `{{ 'Strength' if lang == 'en' else 'Độ mạnh' }}: ` + data.strength;
+                    document.getElementById('copyBtn').style.display = 'inline-block';
+                });
+        }
 
+        function copyPassword() {
+            navigator.clipboard.writeText(document.getElementById('password').innerText)
+                .then(() => {
+                    const btn = document.getElementById('copyBtn');
+                    btn.innerText = "{{ 'Copied!' if lang == 'en' else 'Đã sao chép!' }}";
+                    setTimeout(() => btn.innerText = "{{ 'Copy' if lang == 'en' else 'Sao chép' }}", 1500);
+                });
+        }
+    </script>
 </body>
 </html>
-'''EMOJI = ['😀', '😂', '✨', '❤️', '🔥', '🌟', '🎉', '🥳', '🧠', '💡']
+'''
 
-@app.route('/') def home(): lang = request.args.get('lang', 'en') dark = request.args.get('dark', 'false').lower() == 'true' return render_template_string(template, lang=lang, dark=dark)
+EMOJI = ['😀', '😂', '✨', '❤️', '🔥', '🌟', '🎉', '🥳', '🧠', '💡']
 
-def calculate_strength(pw): score = 0 if len(pw) >= 8: score += 1 if re.search(r"[a-z]", pw) and re.search(r"[A-Z]", pw): score += 1 if re.search(r"[0-9]", pw): score += 1 if re.search(r"[!@#$%^&*()_+-={};':\"|,.<>/?]", pw): score += 1 if any(char in EMOJI for char in pw): score += 1 levels = ['Very Weak', 'Weak', 'Medium', 'Strong', 'Very Strong'] return levels[score] if score < len(levels) else levels[-1]
+@app.route('/')
+def home():
+    lang = request.args.get('lang', 'en')
+    dark = request.args.get('dark', 'false').lower() == 'true'
+    return render_template_string(template, lang=lang, dark=dark)
 
-@app.route('/generate') def generate(): length = request.args.get('length', default=12, type=int) use_letters = request.args.get('letters', 'true') == 'true' use_digits = request.args.get('digits', 'true') == 'true' use_symbols = request.args.get('symbols', 'false') == 'true' use_emoji = request.args.get('emoji', 'false') == 'true'
+def calculate_strength(pw):
+    score = 0
+    if len(pw) >= 8: score += 1
+    if re.search(r"[a-z]", pw) and re.search(r"[A-Z]", pw): score += 1
+    if re.search(r"[0-9]", pw): score += 1
+    if re.search(r"[!@#$%^&*()_+\-=\[\]{};':\\\"|,.<>/?]", pw): score += 1
+    if any(char in EMOJI for char in pw): score += 1
+    levels = ['Very Weak', 'Weak', 'Medium', 'Strong', 'Very Strong']
+    return levels[score] if score < len(levels) else levels[-1]
 
-chars = ''
-if use_letters:
-    chars += string.ascii_letters
-if use_digits:
-    chars += string.digits
-if use_symbols:
-    chars += string.punctuation
-if use_emoji:
-    chars += ''.join(EMOJI)
+@app.route('/generate')
+def generate():
+    length = request.args.get('length', default=12, type=int)
+    use_letters = request.args.get('letters', 'true') == 'true'
+    use_digits = request.args.get('digits', 'true') == 'true'
+    use_symbols = request.args.get('symbols', 'false') == 'true'
+    use_emoji = request.args.get('emoji', 'false') == 'true'
 
-if not chars:
-    return jsonify({'password': '', 'strength': 'None'})
+    chars = ''
+    if use_letters:
+        chars += string.ascii_letters
+    if use_digits:
+        chars += string.digits
+    if use_symbols:
+        chars += string.punctuation
+    if use_emoji:
+        chars += ''.join(EMOJI)
 
-pw = ''.join(random.choices(chars, k=length))
-strength = calculate_strength(pw)
-return jsonify({'password': pw, 'strength': strength})
+    if not chars:
+        return jsonify({'password': '', 'strength': 'None'})
 
-if name == 'main': app.run(host='0.0.0.0', port=5000)
+    pw = ''.join(random.choices(chars, k=length))
+    strength = calculate_strength(pw)
+    return jsonify({'password': pw, 'strength': strength})
 
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
